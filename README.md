@@ -36,7 +36,7 @@ Finally, login to ChatGPT and copy the entire `session` JSON response:
 
 Once copied, store the contents in your home directory in a file named `.gpt_session`.
 
-> **Important**: This file will need to be updated 2-3 days (after the token expires).
+> **Important**: This file will need to be updated every 2-3 days (after the token expires).
 
 ## Usage
 
