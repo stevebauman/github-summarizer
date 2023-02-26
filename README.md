@@ -1,40 +1,29 @@
-<a href="https://supportukrainenow.org/"><img src="https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct.svg" width="100%"></a>
+# GitHub Summarizer (ChatGPT)
 
-------
+Summarize GitHub pull requests using free ChatGPT.
 
-<p align="center">
-    <img title="Laravel Zero" height="100" src="https://raw.githubusercontent.com/laravel-zero/docs/master/images/logo/laravel-zero-readme.png" />
-</p>
+## Requirements
 
-<p align="center">
-  <a href="https://github.com/laravel-zero/framework/actions"><img src="https://github.com/laravel-zero/laravel-zero/actions/workflows/tests.yml/badge.svg" alt="Build Status"></img></a>
-  <a href="https://packagist.org/packages/laravel-zero/framework"><img src="https://img.shields.io/packagist/dt/laravel-zero/framework.svg" alt="Total Downloads"></a>
-  <a href="https://packagist.org/packages/laravel-zero/framework"><img src="https://img.shields.io/packagist/v/laravel-zero/framework.svg?label=stable" alt="Latest Stable Version"></a>
-  <a href="https://packagist.org/packages/laravel-zero/framework"><img src="https://img.shields.io/packagist/l/laravel-zero/framework.svg" alt="License"></a>
-</p>
+- PHP >= 8.1
 
-<h4> <center>This is a <bold>community project</bold> and not an official Laravel one </center></h4>
+## Installation
 
-Laravel Zero was created by [Nuno Maduro](https://github.com/nunomaduro) and [Owen Voke](https://github.com/owenvoke), and is a micro-framework that provides an elegant starting point for your console application. It is an **unofficial** and customized version of Laravel optimized for building command-line applications.
+Install GitHub summarizer via the below command:
 
-- Built on top of the [Laravel](https://laravel.com) components.
-- Optional installation of Laravel [Eloquent](https://laravel-zero.com/docs/database/), Laravel [Logging](https://laravel-zero.com/docs/logging/) and many others.
-- Supports interactive [menus](https://laravel-zero.com/docs/build-interactive-menus/) and [desktop notifications](https://laravel-zero.com/docs/send-desktop-notifications/) on Linux, Windows & MacOS.
-- Ships with a [Scheduler](https://laravel-zero.com/docs/task-scheduling/) and  a [Standalone Compiler](https://laravel-zero.com/docs/build-a-standalone-application/).
-- Integration with [Collision](https://github.com/nunomaduro/collision) - Beautiful error reporting
+```bash
+composer global require stevebauman/github-summarizer
+```
 
-------
+Then create a [GitHub access token](https://github.com/settings/tokens) and store it in your user home directory in a file named `.gh_token`.
 
-## Documentation
+Finally, login to ChatGPT and copy the entire `session` JSON response:
 
-For full documentation, visit [laravel-zero.com](https://laravel-zero.com/).
+Once copied, store the contents in your user home directory in a file named `.gpt_session`.
 
-## Support the development
-**Do you like this project? Support it by donating**
+> **Important**: This file will need to be updated 2-3 days.
 
-- PayPal: [Donate](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=66BYDWAT92N6L)
-- Patreon: [Donate](https://www.patreon.com/nunomaduro)
+## Usage
 
-## License
-
-Laravel Zero is an open-source software licensed under the MIT license.
+```bash
+php summarize pr {org}/{repo}
+```
