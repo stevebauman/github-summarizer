@@ -43,6 +43,14 @@ class ChatGpt
             return false;
         }
 
+        return $this->getResponse($body);
+    }
+
+    /**
+     * Get the response to the question from Chat GPT.
+     */
+    protected function getResponse(string $body): string
+    {
         preg_match_all('/(?<=data:).*?(?=\n)/', $body, $matches);
 
         $matched = $matches[0];
