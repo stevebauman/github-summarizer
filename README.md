@@ -40,6 +40,28 @@ Once copied, store the contents in your home directory in a file named `.gpt_ses
 
 ## Usage
 
+### Pull Request Summarization
+
+Summarize a GitHub pull request:
+
 ```bash
-php summarize pr {org}/{repo}
+summarize pr {org}/{repo} {--number=} {--state=open}
+```
+
+List all open PR's for selection:
+
+```bash
+summarize pr laravel/framework
+```
+
+List all closed PR's for selection:
+
+```bash
+summarize pr laravel/framework --state=closed
+```
+
+Summarize a specific PR by its number:
+
+```bash
+summarize pr laravel/framework --number=1234
 ```
