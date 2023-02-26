@@ -5,7 +5,7 @@ Summarize GitHub pull requests using ChatGPT, for free.
 ## Index
 
 - [Requirements](#requirements)
-- [Installation(#installation)
+- [Installation](#installation)
 - [Usage](#usage)
 
 ## Requirements
