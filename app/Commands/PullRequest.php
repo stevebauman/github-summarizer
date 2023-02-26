@@ -14,7 +14,7 @@ class PullRequest extends Command
      *
      * @var string
      */
-    protected $signature = 'pr {repo?}';
+    protected $signature = 'pr {repo?} {--number=} {--state=open}';
 
     /**
      * The description of the command.
@@ -40,15 +40,19 @@ class PullRequest extends Command
 
         [$org, $name] = explode('/', $repo);
 
-        $prs = $github->api('pull_request')->all($org, $name, ['state' => 'open']);
+        if ($number = $this->option('number')) {
+            $pr = $github->api('pull_request')->show($org, $name, $number);
+        } else {
+            $prs = $github->api('pull_request')->all($org, $name, ['state' => $this->option('state')]);
 
-        $titles = array_map(fn ($pr) => $pr['number'].'|'.$pr['title'], $prs);
+            $titles = array_map(fn ($pr) => $pr['number'].'|'.$pr['title'], $prs);
 
-        $title = $this->choice('Which pull request do you want to summarize?', $titles);
+            $title = $this->choice('Which pull request do you want to summarize?', $titles);
 
-        [$number] = explode('|', $title);
+            [$number] = explode('|', $title);
 
-        $pr = collect($prs)->firstWhere('number', $number);
+            $pr = collect($prs)->firstWhere('number', $number);
+        }
 
         $commits = $github->api('repo')->commits()->show($org, $name, $pr['merge_commit_sha']);
 
@@ -60,7 +64,7 @@ class PullRequest extends Command
 
         $chatgpt = $this->chatgpt($chatGptToken);
 
-        $this->line("Summarizing pull request [$title]...");
+        $this->line("Summarizing pull request '{$pr['title']}'...");
 
         $this->newLine();
 
