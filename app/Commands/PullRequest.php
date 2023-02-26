@@ -2,22 +2,11 @@
 
 namespace App\Commands;
 
-use App\ChatGpt;
-use App\Commit;
-use App\Diff;
-use Gioni06\Gpt3Tokenizer\Gpt3Tokenizer;
-use Gioni06\Gpt3Tokenizer\Gpt3TokenizerConfig;
-use Github\AuthMethod;
-use Github\Client;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 use LaravelZero\Framework\Commands\Command;
-use ptlis\DiffParser\Parser;
 
 class PullRequest extends Command
 {
+    use InteractsWithGitHub;
     use InteractsWithChatGpt;
 
     /**
@@ -36,14 +25,14 @@ class PullRequest extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return mixed
      */
-    public function handle()
+    public function handle(): mixed
     {
-        $client = new Client();
+        if (($githubAccessToken = $this->getGitHubAccessToken()) === static::FAILURE) {
+            return $githubAccessToken;
+        }
 
-        $client->authenticate('token', authMethod: AuthMethod::ACCESS_TOKEN);
+        $github = $this->github($githubAccessToken);
 
         if (! ($repo = $this->argument('repo'))) {
             $repo = $this->ask('Which repository?');
@@ -51,7 +40,7 @@ class PullRequest extends Command
 
         [$org, $name] = explode('/', $repo);
 
-        $prs = $client->api('pull_request')->all($org, $name, ['state' => 'open']);
+        $prs = $github->api('pull_request')->all($org, $name, ['state' => 'open']);
 
         $titles = array_map(fn ($pr) => $pr['number'].'|'.$pr['title'], $prs);
 
@@ -61,21 +50,19 @@ class PullRequest extends Command
 
         $pr = collect($prs)->firstWhere('number', $number);
 
-        $commits = $client->api('repo')->commits()->show($org, $name, $pr['merge_commit_sha']);
+        $commits = $github->api('repo')->commits()->show($org, $name, $pr['merge_commit_sha']);
 
         $files = $commits['files'];
 
-        if (($token = $this->getToken()) === static::FAILURE) {
-            return $token;
+        if (($chatGptToken = $this->getChatGptToken()) === static::FAILURE) {
+            return $chatGptToken;
         }
 
-        $gpt = new ChatGpt($token);
+        $chatgpt = $this->chatgpt($chatGptToken);
 
         $this->line("Summarizing pull request [$title]...");
 
         $this->newLine();
-
-        // $tokenizer = new Gpt3Tokenizer(new Gpt3TokenizerConfig);
 
         foreach ($files as $file) {
             $diff = <<<EOT
@@ -84,18 +71,8 @@ class PullRequest extends Command
             {$file['patch']}
             EOT;
 
-//            /** @var  \ptlis\DiffParser\File $changeset */
-//            $changeset = head((new Parser)->parse($diff, Parser::VCS_GIT)->files);
-//
-//            $lines = $changeset->hunks[0]->lines;
-//
-//            $count = count($lines);
-//
-//            $firstHalf = array_slice($lines, 0, $count / 2);
-//            $secondHalf = array_slice($lines, $count / 2);
-
             $response = retry(3, fn () => (
-                $gpt->ask(<<<EOT
+                $chatgpt->ask(<<<EOT
                     Describe below diff in a short sentence like a changelog entry:
                     $diff
                     EOT
@@ -103,7 +80,7 @@ class PullRequest extends Command
             ), 1000);
 
             if ($response === false) {
-                $this->error($gpt->error());
+                $this->error($chatgpt->error());
 
                 return static::FAILURE;
             }
@@ -113,6 +90,4 @@ class PullRequest extends Command
 
         return static::SUCCESS;
     }
-
-
 }

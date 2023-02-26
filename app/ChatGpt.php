@@ -8,19 +8,31 @@ use Illuminate\Support\Str;
 
 class ChatGpt
 {
+    /**
+     * The last error that occurred.
+     */
     protected ?string $error = null;
 
+    /**
+     * Constructor.
+     */
     public function __construct(
         protected string $token,
         protected string $model = 'text-davinci-002-render-sha',
         protected string $url = 'https://chat.duti.tech/api/conversation',
     ) {}
 
-    public function error()
+    /**
+     * Get the last error that occurred.
+     */
+    public function error(): ?string
     {
         return $this->error;
     }
 
+    /**
+     * Ask a question.
+     */
     public function ask(string $question): string|false
     {
         $body = $this->http()->post($this->url, $this->makeMessage($question))->body();
@@ -44,6 +56,9 @@ class ChatGpt
         return implode(' ', $parts);
     }
 
+    /**
+     * Make a new Chat GPT message.
+     */
     protected function makeMessage(string $question): array
     {
         return [
@@ -63,6 +78,9 @@ class ChatGpt
         ];
     }
 
+    /**
+     * Make a new HTTP request.
+     */
     protected function http(): PendingRequest
     {
         return Http::contentType('application/json')

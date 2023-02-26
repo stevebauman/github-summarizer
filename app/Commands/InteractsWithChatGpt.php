@@ -8,27 +8,45 @@ use Illuminate\Support\Facades\File;
 /** @mixin \LaravelZero\Framework\Commands\Command */
 trait InteractsWithChatGpt
 {
-    protected function chatgpt()
+    /**
+     * Create a new Chat GPT client.
+     */
+    protected function chatgpt(string $token): ChatGpt
     {
-        return new ChatGpt($this->getToken());
+        return new ChatGpt($token);
     }
 
-    protected function getToken()
+    /**
+     * Get the CHAT GPT token from the session file.
+     */
+    protected function getChatGptToken(): int|string
     {
-        $tokenPath = $this->getTokenPath();
+        $sessionPath = $this->getChatGptSessionPath();
 
-        if (! File::exists($tokenPath)) {
-            $this->warn("No access token exists at path [$tokenPath]. Attempting to create file...");
+        if (! File::exists($sessionPath)) {
+            $this->warn("No Chat GPT session file exists at path [$sessionPath]. Attempting to create file...");
 
-            File::put($tokenPath, '');
+            File::put($sessionPath, '');
 
-            $this->info("Successfully created access token file at [$tokenPath]. Please fill in your Chat GPT access token.");
+            $this->info("Successfully created session file at [$sessionPath]. Please fill in your Chat GPT session JSON.");
 
             return static::FAILURE;
         }
 
-        if (empty($token = File::get($tokenPath))) {
-            $this->error("Access token file at [$tokenPath] is empty.");
+        if (empty($contents = File::get($sessionPath))) {
+            $this->error("Chat GPT session file at [$sessionPath] is empty.");
+
+            return static::FAILURE;
+        }
+
+        if (! ($json = json_decode($contents, true))) {
+            $this->error("Chat GPT session file at [$sessionPath] contains invalid JSON.");
+
+            return static::FAILURE;
+        }
+
+        if (empty($token = $json['accessToken'] ?? null)) {
+            $this->error("Chat GPT session file does not contain an [accessToken] JSON key.");
 
             return static::FAILURE;
         }
@@ -36,8 +54,11 @@ trait InteractsWithChatGpt
         return $token;
     }
 
-    protected function getTokenPath()
+    /**
+     * Get the Chat GPT session file path.
+     */
+    protected function getChatGptSessionPath(): string
     {
-        return $_SERVER['HOME'] . DIRECTORY_SEPARATOR . '.gpt_token';
+        return $_SERVER['HOME'] . DIRECTORY_SEPARATOR . '.gpt_session';
     }
 }
