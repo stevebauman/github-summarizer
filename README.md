@@ -16,7 +16,7 @@ composer global require stevebauman/github-summarizer
 
 Next, you will need to find your PHP's "home" directory to be able to store some token files.
 
-Locate it via the below command:
+Locate it by running the below console command:
 
 ```bash
 php -r 'echo $_SERVER["HOME"];'
