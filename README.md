@@ -2,6 +2,12 @@
 
 Summarize GitHub pull requests using ChatGPT, for free.
 
+## Index
+
+- [Requirements](#requirements)
+- [Installation(#installation)
+- [Usage](#usage)
+
 ## Requirements
 
 - PHP >= 8.1
