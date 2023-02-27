@@ -6,6 +6,7 @@ Summarize GitHub pull requests using ChatGPT, for free.
 
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Authentication Setup](#authentication-setup)
 - [Usage](#usage)
 
 ## Requirements
@@ -20,21 +21,34 @@ Install GitHub summarizer via the below command:
 composer global require stevebauman/github-summarizer
 ```
 
-Next, you will need to find your PHP's "home" directory to be able to store some token files.
+## Authentication Setup
 
-Locate it by running the below console command:
+GitHub Summarizer requires two files created in your operating system's `home` directory:
+
+- `.gh_token`
+- `.gpt_token`
+
+To find your OS' "home" directory, run the below console command:
 
 ```bash
 php -r 'echo $_SERVER["HOME"];'
 ```
 
-Then create a [GitHub access token](https://github.com/settings/tokens) and store it in your home directory in a file named `.gh_token`.
+### GitHub Access Token
 
-Finally, login to ChatGPT and copy the entire `session` JSON response:
+Create a [GitHub access token](https://github.com/settings/tokens).
+
+Copy the token, and paste it in the `.gh_token` file in your home directory.
+
+### ChatGPT Session Token
+
+Login to ChatGPT and copy the entire `session` JSON response.
+
+> **Tip**: Click the "Fetch/XHR" filter tab, then refresh the page. It will be the first network request sent.
 
 ![Screenshot 2023-02-26 at 4 04 06 PM](https://user-images.githubusercontent.com/6421846/221437445-610ba3a9-a38c-43c5-ba47-786b21243c8c.png)
 
-Once copied, store the contents in your home directory in a file named `.gpt_session`.
+Once copied, store the contents in the `.gpt_session` file in your home directory.
 
 > **Important**: This file will need to be updated every 2-3 days (after the token expires).
 
