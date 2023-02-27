@@ -1,6 +1,6 @@
 # GitHub Summarizer (ChatGPT)
 
-Summarize GitHub pull requests using ChatGPT, for free.
+Summarize GitHub pull requests and commits using ChatGPT, for free.
 
 ## Index
 
