@@ -2,45 +2,128 @@
 
 namespace App\Commands;
 
+use App\FilePatch;
+use Gioni06\Gpt3Tokenizer\Gpt3Tokenizer;
+use Gioni06\Gpt3Tokenizer\Gpt3TokenizerConfig;
 use LaravelZero\Framework\Commands\Command as BaseCommand;
+use ptlis\DiffParser\File;
+use ptlis\DiffParser\Parser;
 
 abstract class Command extends BaseCommand
 {
     use InteractsWithGitHub;
     use InteractsWithChatGpt;
 
+    public const MAX_TOKENS = 4000;
+
+    /**
+     * The GTP3 tokenizer instance.
+     */
+    protected ?Gpt3Tokenizer $tokenizer = null;
+
     /**
      * Summarize the patch files using Chat GPT.
      */
     protected function summarize(array $files): void
     {
-        $chatgpt = $this->chatgpt();
-
         foreach ($files as $file) {
-            $diff = <<<EOT
-            --- {$file['filename']}
-            +++ {$file['filename']}
-            {$file['patch']}
-            EOT;
-
-            $response = $chatgpt->ask(<<<EOT
-                Describe below diff in a short sentence like a changelog entry:
-                $diff
-                EOT
+            $this->generateFileSummary(
+                new FilePatch(
+                    $file['filename'],
+                    $file['previous_filename'] ?? null,
+                    $file['patch']
+                )
             );
-
-            if ($response === false) {
-                $this->error("ChatGPT Error: " . $chatgpt->error());
-
-                exit(static::FAILURE);
-            }
-
-            $this->line("- $response");
         }
     }
 
     /**
-     * Get the repsotory to query.
+     * Generate a summary for the file patch.
+     */
+    protected function generateFileSummary(FilePatch $patch)
+    {
+        $originalFilename = $patch->previousFilename ?? $patch->filename;
+
+        $diff = <<<EOT
+        --- $originalFilename
+        +++ {$patch->filename}
+        {$patch->contents}
+        EOT;
+
+        $tokens = $this->tokenizer()->count($diff);
+
+        if ($tokens >= static::MAX_TOKENS) {
+            return $this->splitUpDiffAndSummarize($diff);
+        }
+
+        $response = retry(2, fn () => (
+            $this->chatgpt()->ask($this->getQuestion($diff))
+        ), 2000);
+
+        if ($response === false) {
+            $this->error("ChatGPT Error: " . $this->chatgpt()->error());
+
+            exit(static::FAILURE);
+        }
+
+        $this->line("- $response");
+    }
+
+    /**
+     * Split the diff in half and attempt summarization.
+     */
+    protected function splitUpDiffAndSummarize(string $diff)
+    {
+        $file = head((new Parser)->parse($diff, Parser::VCS_GIT)->files);
+
+        $lines = $file->hunks[0]->lines;
+
+        $count = count($lines);
+
+        $firstHalf = array_slice($lines, 0, $count / 2);
+        $secondHalf = array_slice($lines, $count / 2);
+
+        $this->summarize([
+            $this->assembleDiffWithLines($file, $firstHalf),
+            $this->assembleDiffWithLines($file, $secondHalf),
+        ]);
+    }
+
+    /**
+     * Assemble a new diff with the given lines.
+     */
+    protected function assembleDiffWithLines(File $file, array $lines): array
+    {
+        return [
+            'patch' => implode('\\n', $lines),
+            'filename' => $file->newFilename,
+            'previous_filename' => $file->originalFilename,
+        ];
+    }
+
+    /**
+     * Get the question to ask Chat GPT.
+     */
+    protected function getQuestion($diff): false|string
+    {
+        return <<<EOT
+        Describe below diff in a short sentence like a changelog entry:
+        $diff
+        EOT;
+    }
+
+    /**
+     * Get or create the tokenizer instance.
+     */
+    protected function tokenizer(): Gpt3Tokenizer
+    {
+        return $this->tokenizer ??= new Gpt3Tokenizer(
+            new Gpt3TokenizerConfig()
+        );
+    }
+
+    /**
+     * Get the repository to query.
      */
     protected function getRepository(): array
     {
