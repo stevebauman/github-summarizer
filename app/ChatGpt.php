@@ -35,6 +35,8 @@ class ChatGpt
      */
     public function ask(string $question): string|false
     {
+        $this->error = null;
+
         $body = $this->http()->post($this->url, $this->makeMessage($question))->body();
 
         if ($json = json_decode($body, true)) {
