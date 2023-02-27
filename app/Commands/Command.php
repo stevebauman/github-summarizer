@@ -23,13 +23,11 @@ abstract class Command extends BaseCommand
             {$file['patch']}
             EOT;
 
-            $response = retry(3, fn () => (
-                $chatgpt->ask(<<<EOT
-                    Describe below diff in a short sentence like a changelog entry:
-                    $diff
-                    EOT
-                )
-            ), 1000);
+            $response = $chatgpt->ask(<<<EOT
+                Describe below diff in a short sentence like a changelog entry:
+                $diff
+                EOT
+            );
 
             if ($response === false) {
                 $this->error("ChatGPT Error: " . $chatgpt->error());
