@@ -81,3 +81,35 @@ Summarize a specific PR by its number:
 ```bash
 summarize pr laravel/framework --number=1234
 ```
+
+### Commit Summarization:
+
+Summarize a GitHub commit or range of commits:
+
+```bash
+summarize commit {org}/{repo} {sha} {--from=} {--to=}
+```
+
+List recent commits to summarize:
+
+```bash
+summarize commit laravel/framework
+```
+
+List recent commits in a specific branch to summarize:
+
+```bash
+summarize commit laravel/framework --branch=10.x
+```
+
+Summarize a specific commit:
+
+```bash
+summarize commit laravel/framework {sha}
+```
+
+Summarize a range of commits:
+
+```bash
+summarize commit laravel/framework --from={sha} --to={sha}
+```
