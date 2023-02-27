@@ -9,11 +9,18 @@ use Illuminate\Support\Facades\File;
 trait InteractsWithChatGpt
 {
     /**
+     * The ChatGPT API client.
+     */
+    protected ?ChatGpt $chatGpt = null;
+
+    /**
      * Create a new Chat GPT client.
      */
-    protected function chatgpt(string $token): ChatGpt
+    protected function chatgpt(): ChatGpt
     {
-        return new ChatGpt($token);
+        return $this->chatGpt ??= new ChatGpt(
+            $this->getChatGptToken()
+        );
     }
 
     /**
@@ -30,25 +37,25 @@ trait InteractsWithChatGpt
 
             $this->info("Successfully created session file at [$sessionPath]. Please fill in your Chat GPT session JSON.");
 
-            return static::FAILURE;
+            exit(static::FAILURE);
         }
 
         if (empty($contents = File::get($sessionPath))) {
             $this->error("Chat GPT session file at [$sessionPath] is empty.");
 
-            return static::FAILURE;
+            exit(static::FAILURE);
         }
 
         if (! ($json = json_decode($contents, true))) {
             $this->error("Chat GPT session file at [$sessionPath] contains invalid JSON.");
 
-            return static::FAILURE;
+            exit(static::FAILURE);
         }
 
         if (empty($token = $json['accessToken'] ?? null)) {
             $this->error("Chat GPT session file does not contain an [accessToken] JSON key.");
 
-            return static::FAILURE;
+            exit(static::FAILURE);
         }
 
         return $token;

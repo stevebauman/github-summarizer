@@ -9,15 +9,19 @@ use Illuminate\Support\Facades\File;
 trait InteractsWithGitHub
 {
     /**
+     * The GitHub API client.
+     */
+    protected ?Client $github = null;
+
+    /**
      * Make a GitHub API client.
      */
-    public function github(string $accessToken): Client
+    public function github(): Client
     {
-        $client = new Client();
-
-        $client->authenticate($accessToken, authMethod: AuthMethod::ACCESS_TOKEN);
-
-        return $client;
+        return $this->github ??= tap(new Client)->authenticate(
+            $this->getGitHubAccessToken(),
+            authMethod: AuthMethod::ACCESS_TOKEN
+        );
     }
 
     /**
@@ -34,13 +38,13 @@ trait InteractsWithGitHub
 
             $this->info("Successfully created access token file at [$tokenPath]. Please fill in your GitHub access token.");
 
-            return static::FAILURE;
+            exit(static::FAILURE);
         }
 
         if (empty($token = File::get($tokenPath))) {
             $this->error("GitHub access token file at [$tokenPath] is empty.");
 
-            return static::FAILURE;
+            exit(static::FAILURE);
         }
 
         return $token;

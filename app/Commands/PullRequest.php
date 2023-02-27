@@ -2,13 +2,8 @@
 
 namespace App\Commands;
 
-use LaravelZero\Framework\Commands\Command;
-
 class PullRequest extends Command
 {
-    use InteractsWithGitHub;
-    use InteractsWithChatGpt;
-
     /**
      * The signature of the command.
      *
@@ -26,72 +21,48 @@ class PullRequest extends Command
     /**
      * Execute the console command.
      */
-    public function handle(): mixed
+    public function handle(): int
     {
-        if (($githubAccessToken = $this->getGitHubAccessToken()) === static::FAILURE) {
-            return $githubAccessToken;
-        }
+        [$org, $name] = $this->getRepository();
 
-        $github = $this->github($githubAccessToken);
+        $pr = $this->getPullRequest($org, $name);
 
-        if (! ($repo = $this->argument('repo'))) {
-            $repo = $this->ask('Which repository?');
-        }
-
-        [$org, $name] = explode('/', $repo);
-
-        if ($number = $this->option('number')) {
-            $pr = $github->api('pull_request')->show($org, $name, $number);
-        } else {
-            $prs = $github->api('pull_request')->all($org, $name, ['state' => $this->option('state')]);
-
-            $titles = array_map(fn ($pr) => $pr['number'].'|'.$pr['title'], $prs);
-
-            $title = $this->choice('Which pull request do you want to summarize?', $titles);
-
-            [$number] = explode('|', $title);
-
-            $pr = collect($prs)->firstWhere('number', $number);
-        }
-
-        $commits = $github->api('repo')->commits()->show($org, $name, $pr['merge_commit_sha']);
-
-        $files = $commits['files'];
-
-        if (($chatGptToken = $this->getChatGptToken()) === static::FAILURE) {
-            return $chatGptToken;
-        }
-
-        $chatgpt = $this->chatgpt($chatGptToken);
+        $files = $this->getCommits($org, $name, $pr['merge_commit_sha'])['files'];
 
         $this->line("Summarizing pull request '{$pr['title']}'...");
 
         $this->newLine();
 
-        foreach ($files as $file) {
-            $diff = <<<EOT
-            --- {$file['filename']}
-            +++ {$file['filename']}
-            {$file['patch']}
-            EOT;
-
-            $response = retry(3, fn () => (
-                $chatgpt->ask(<<<EOT
-                    Describe below diff in a short sentence like a changelog entry:
-                    $diff
-                    EOT
-                )
-            ), 1000);
-
-            if ($response === false) {
-                $this->error($chatgpt->error());
-
-                return static::FAILURE;
-            }
-
-            $this->line("- $response");
-        }
+        $this->summarize($files);
 
         return static::SUCCESS;
+    }
+
+    /**
+     * Get a list of commits from the given PR SHA.
+     */
+    protected function getCommits(string $org, string $repo, string $commitSha): array
+    {
+        return $this->github()->api('repo')->commits()->show($org, $repo, $commitSha);
+    }
+
+    /**
+     * Get the pull request to summarize.
+     */
+    protected function getPullRequest( string $org, string $repo): array
+    {
+        if ($number = $this->option('number')) {
+            return $this->github()->api('pull_request')->show($org, $repo, $number);
+        }
+
+        $prs = $this->github()->api('pull_request')->all($org, $repo, ['state' => $this->option('state')]);
+
+        $titles = array_map(fn ($pr) => $pr['number'].'|'.$pr['title'], $prs);
+
+        $title = $this->choice('Which pull request do you want to summarize?', $titles);
+
+        [$number] = explode('|', $title);
+
+        return collect($prs)->where('number', $number)->sole();
     }
 }
