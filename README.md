@@ -42,11 +42,13 @@ Copy the token, and paste it in the `.gh_token` file in your home directory.
 
 ### ChatGPT Session Token
 
-Login to ChatGPT and copy the entire `session` JSON response.
+Login to ChatGPT and copy the entire `session` JSON response:
 
 > **Tip**: Click the "Fetch/XHR" filter tab, then refresh the page. It will be the first network request sent.
 
-![Screenshot 2023-02-26 at 4 04 06 PM](https://user-images.githubusercontent.com/6421846/221437445-610ba3a9-a38c-43c5-ba47-786b21243c8c.png)
+<p align="center">
+<img width="750" src="https://user-images.githubusercontent.com/6421846/221437445-610ba3a9-a38c-43c5-ba47-786b21243c8c.png"/>
+</p>
 
 Once copied, store the contents in the `.gpt_session` file in your home directory.
 
