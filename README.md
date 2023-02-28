@@ -1,6 +1,10 @@
 # GitHub Summarizer (ChatGPT)
 
-Summarize GitHub pull requests and commits using ChatGPT, for free.
+Summarize GitHub pull requests and commits using ChatGPT, for free. 💸
+
+> **Warning**: This project uses a third-party ChatGPT reverse proxy server.
+> 
+> There shouldn't be any adverse effects possible from this, but please consider the risks before using this package.
 
 ## Index
 
