@@ -46,8 +46,8 @@ abstract class Command extends BaseCommand
 
         $diff = <<<EOT
         --- $originalFilename
-        +++ {$patch->filename}
-        {$patch->contents}
+        +++ $patch->filename
+        $patch->contents
         EOT;
 
         $tokens = $this->tokenizer()->count($diff);
@@ -57,7 +57,7 @@ abstract class Command extends BaseCommand
         }
 
         $response = retry(2, fn () => (
-            $this->chatgpt()->ask($this->getQuestion($diff))
+            $this->chatgpt()->ask($this->getQuestion($diff, $this->option('style')))
         ), 2000);
 
         if ($response === false) {
@@ -104,10 +104,15 @@ abstract class Command extends BaseCommand
     /**
      * Get the question to ask Chat GPT.
      */
-    protected function getQuestion($diff): false|string
+    protected function getQuestion(string $diff, string $style): false|string
     {
+        $type = match ($style) {
+            'commit' => "commit message. Use words like 'add', 'remove' and 'change'",
+            default => "changelog entry. Use words like 'added', 'removed' and 'changed'",
+        };
+
         return <<<EOT
-        Describe below diff in a short sentence like a changelog entry:
+        Describe below diff in a short sentence like a $type:
         $diff
         EOT;
     }
