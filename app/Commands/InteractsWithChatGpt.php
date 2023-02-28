@@ -3,13 +3,12 @@
 namespace App\Commands;
 
 use App\ChatGpt;
-use App\Concerns\BaseDir;
 use Illuminate\Support\Facades\File;
 
 /** @mixin \LaravelZero\Framework\Commands\Command */
 trait InteractsWithChatGpt
 {
-    use BaseDir;
+    use InteractsWithBaseDir;
 
     /**
      * The ChatGPT API client.
@@ -29,46 +28,22 @@ trait InteractsWithChatGpt
     /**
      * Get the CHAT GPT token from the session file.
      */
-    protected function getChatGptToken(): int|string
+    protected function getChatGptToken(): string
     {
-        $sessionPath = $this->getChatGptSessionPath();
-
-        if (! File::exists($sessionPath)) {
-            $this->warn("No Chat GPT session file exists at path [$sessionPath]. Attempting to create file...");
-
-            File::put($sessionPath, '');
-
-            $this->info("Successfully created session file at [$sessionPath]. Please fill in your Chat GPT session JSON.");
-
-            exit(static::FAILURE);
-        }
-
-        if (empty($contents = File::get($sessionPath))) {
-            $this->error("Chat GPT session file at [$sessionPath] is empty.");
-
-            exit(static::FAILURE);
-        }
+        $contents = $this->getOrCreateInHomeDir('.gpt_session', $title = 'Chat GPT session');
 
         if (! ($json = json_decode($contents, true))) {
-            $this->error("Chat GPT session file at [$sessionPath] contains invalid JSON.");
+            $this->error("$title file contains invalid JSON.");
 
             exit(static::FAILURE);
         }
 
         if (empty($token = $json['accessToken'] ?? null)) {
-            $this->error("Chat GPT session file does not contain an [accessToken] JSON key.");
+            $this->error("$title file does not contain an [accessToken] JSON key.");
 
             exit(static::FAILURE);
         }
 
         return $token;
-    }
-
-    /**
-     * Get the Chat GPT session file path.
-     */
-    protected function getChatGptSessionPath(): string
-    {
-        return $this->getHomeDir() . DIRECTORY_SEPARATOR . '.gpt_session';
     }
 }
