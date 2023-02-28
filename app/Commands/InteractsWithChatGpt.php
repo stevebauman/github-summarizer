@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\ChatGpt;
-use Illuminate\Support\Facades\File;
 
 /** @mixin \LaravelZero\Framework\Commands\Command */
 trait InteractsWithChatGpt
