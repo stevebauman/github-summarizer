@@ -112,14 +112,14 @@ Summarize a specific commit:
 summarize commit laravel/framework {sha}
 ```
 
-Summarize a commit range to `master`
-
-```bash
-summarize commit laravel/framework --from={sha}
-```
-
 Summarize a range of commits:
 
 ```bash
 summarize commit laravel/framework --from={sha} --to={sha}
+```
+
+Summarize a range of commits (from the given commit to `master`)
+
+```bash
+summarize commit laravel/framework --from={sha}
 ```
