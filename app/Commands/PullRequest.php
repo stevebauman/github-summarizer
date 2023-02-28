@@ -9,7 +9,7 @@ class PullRequest extends Command
      *
      * @var string
      */
-    protected $signature = 'pr {repo?} {--number=} {--state=open}';
+    protected $signature = 'pr {repo?} {--number=} {--state=open} {--style=changelog}';
 
     /**
      * The description of the command.

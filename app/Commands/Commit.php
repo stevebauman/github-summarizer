@@ -11,7 +11,7 @@ class Commit extends Command
      *
      * @var string
      */
-    protected $signature = 'commit {repo?} {sha?} {--from=} {--to=master} {--branch=master}';
+    protected $signature = 'commit {repo?} {sha?} {--from=} {--to=master} {--branch=master} {--style=changelog}';
 
     /**
      * The description of the command.
