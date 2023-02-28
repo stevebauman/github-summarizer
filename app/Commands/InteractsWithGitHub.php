@@ -2,12 +2,15 @@
 
 namespace App\Commands;
 
+use App\Concerns\BaseDir;
 use Github\AuthMethod;
 use Github\Client;
 use Illuminate\Support\Facades\File;
 
 trait InteractsWithGitHub
 {
+    use BaseDir;
+
     /**
      * The GitHub API client.
      */
@@ -55,6 +58,6 @@ trait InteractsWithGitHub
      */
     protected function getGitHubAccessTokenPath(): string
     {
-        return $_SERVER['HOME'] . DIRECTORY_SEPARATOR . '.gh_token';
+        return $this->getHomeDir() . DIRECTORY_SEPARATOR . '.gh_token';
     }
 }

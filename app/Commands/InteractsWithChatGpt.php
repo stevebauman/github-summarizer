@@ -3,11 +3,14 @@
 namespace App\Commands;
 
 use App\ChatGpt;
+use App\Concerns\BaseDir;
 use Illuminate\Support\Facades\File;
 
 /** @mixin \LaravelZero\Framework\Commands\Command */
 trait InteractsWithChatGpt
 {
+    use BaseDir;
+
     /**
      * The ChatGPT API client.
      */
@@ -66,6 +69,6 @@ trait InteractsWithChatGpt
      */
     protected function getChatGptSessionPath(): string
     {
-        return $_SERVER['HOME'] . DIRECTORY_SEPARATOR . '.gpt_session';
+        return $this->getHomeDir() . DIRECTORY_SEPARATOR . '.gpt_session';
     }
 }
