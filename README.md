@@ -2,7 +2,7 @@
 
 Summarize GitHub pull requests and commits using ChatGPT, for free. 💸
 
-> **Warning**: This project uses a third-party ChatGPT reverse proxy server.
+> **Warning**: This project uses a third-party ChatGPT reverse proxy server using your session token.
 > 
 > There shouldn't be any adverse effects possible from this, but please consider the risks before using this package.
 
