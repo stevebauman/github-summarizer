@@ -72,6 +72,8 @@ class Here extends Command
             }
         }
 
+        $this->info('Done.');
+
         return static::SUCCESS;
     }
 
