@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Git;
+use ptlis\DiffParser\File;
 
 class Here extends Command
 {
@@ -50,30 +51,46 @@ class Here extends Command
             Git::add($dir, $file)
         ), Git::untrackedFiles($dir));
 
-        $files = $this->parseDiff(Git::diff($dir));
+        $diff = Git::diff($dir);
 
-        foreach ($files as $file) {
-            $names = array_unique([$file->originalFilename, $file->newFilename]);
+        foreach ($this->parseDiff($diff) as $file) {
+            $names = array_unique([
+                $file->originalFilename === '/dev/null'
+                    ? $file->newFilename
+                    : $file->originalFilename,
+                $file->newFilename,
+            ]);
 
             $this->info(sprintf('Analyzing [%s]...', implode(' -> ', $names)));
 
-            $response = $this->chatgpt()->ask(
-                $this->getQuestion((string) $file, 'commit')
-            );
+            [$choice, $response] = $this->askForSummary($file);
 
-            if (! $this->confirm($response)) {
-                continue;
+            if ($choice === 'Commit') {
+                Git::commit($dir, $file->newFilename, $response);
+
+                $this->info('Okay, commit has been saved.');
             }
-
-            if (! Git::commit($dir, $file->newFilename, $response)) {
-                $this->error('Failed to commit file. Stopping...');
-
-                return static::FAILURE;
-            }
-
-            $this->info('Okay, commit has been saved.');
         }
 
         return static::SUCCESS;
+    }
+
+    /**
+     * Ask for a summary of the file.
+     */
+    protected function askForSummary(File $file): array
+    {
+        $response = $this->chatgpt()->ask(
+            $this->getQuestion((string) $file, 'commit')
+        );
+
+        switch ($choice = $this->choice($response, ['Commit', 'Retry', 'Pass'], 0)) {
+            case 'Retry':
+                $this->info('Okay, regenerating summary...');
+
+                return $this->askForSummary($file);
+            default:
+                return [$choice, $response];
+        }
     }
 }
