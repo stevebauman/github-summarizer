@@ -65,7 +65,7 @@ Once copied, store the contents in the `.gpt_session` file in your home director
 Summarize a GitHub pull request:
 
 ```bash
-summarize pr {org}/{repo} {--number=} {--state=open}
+summarize pr {org}/{repo} {--number=} {--state=open} {--style=changelog}
 ```
 
 List all open PR's for selection:
@@ -86,12 +86,18 @@ Summarize a specific PR by its number:
 summarize pr laravel/framework --number=1234
 ```
 
+Summarize a specific PR by its number responding in a "commit" style:
+
+```bash
+summarize pr laravel/framework --number=1234 --style=commit
+```
+
 ### Commit Summarization:
 
 Summarize a GitHub commit or range of commits:
 
 ```bash
-summarize commit {org}/{repo} {sha} {--from=} {--to=}
+summarize commit {org}/{repo} {sha} {--from=} {--to=} {--style=changelog}
 ```
 
 List recent commits to summarize:
@@ -110,6 +116,12 @@ Summarize a specific commit:
 
 ```bash
 summarize commit laravel/framework {sha}
+```
+
+Summarize a specific commit responding in a "commit" style:
+
+```bash
+summarize commit laravel/framework {sha} --style=commit
 ```
 
 Summarize a range of commits:
