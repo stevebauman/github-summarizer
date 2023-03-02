@@ -74,7 +74,7 @@ abstract class Command extends BaseCommand
      */
     protected function splitUpDiffAndSummarize(string $diff)
     {
-        $file = head((new Parser)->parse($diff, Parser::VCS_GIT)->files);
+        $file = head($this->parseDiff($diff));
 
         $lines = $file->hunks[0]->lines;
 
@@ -87,6 +87,16 @@ abstract class Command extends BaseCommand
             $this->assembleDiffWithLines($file, $firstHalf),
             $this->assembleDiffWithLines($file, $secondHalf),
         ]);
+    }
+
+    /**
+     * Parse the diff.
+     *
+     * @return \ptlis\DiffParser\File[]
+     */
+    protected function parseDiff(string $diff): array
+    {
+        return (new Parser)->parse($diff, Parser::VCS_GIT)->files;
     }
 
     /**
