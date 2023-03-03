@@ -14,7 +14,7 @@ abstract class Command extends BaseCommand
     use InteractsWithGitHub;
     use InteractsWithChatGpt;
 
-    public const MAX_TOKENS = 4000;
+    public const MAX_TOKENS = 4096;
 
     /**
      * The GTP3 tokenizer instance.
