@@ -60,6 +60,17 @@ Once copied, store the contents in the `.gpt_session` file in your home director
 
 ## Usage
 
+### Setting Your Account Type (Free, Pro, Plus)
+
+```bash
+summarize set:account
+
+> "What type of account do you have?:"
+  [0] free
+  [1] plus
+  [2] turbo
+```
+
 ### Pull Request Summarization
 
 Summarize a GitHub pull request:
@@ -83,13 +94,13 @@ summarize pr laravel/framework --state=closed
 Summarize a specific PR by its number:
 
 ```bash
-summarize pr laravel/framework --number=1234
+summarize pr laravel/framework 1234
 ```
 
 Summarize a specific PR by its number responding in a "commit" style:
 
 ```bash
-summarize pr laravel/framework --number=1234 --style=commit
+summarize pr laravel/framework 1234 --style=commit
 ```
 
 ### Commit Summarization:
