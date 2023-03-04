@@ -9,7 +9,7 @@ class PullRequest extends Command
      *
      * @var string
      */
-    protected $signature = 'pr {repo?} {--number=} {--state=open} {--style=changelog}';
+    protected $signature = 'pr {repo?} {number?} {--state=open} {--style=changelog}';
 
     /**
      * The description of the command.
@@ -51,7 +51,7 @@ class PullRequest extends Command
      */
     protected function getPullRequest( string $org, string $repo): array
     {
-        if ($number = $this->option('number')) {
+        if ($number = $this->argument('number')) {
             return $this->github()->api('pull_request')->show($org, $repo, $number);
         }
 
