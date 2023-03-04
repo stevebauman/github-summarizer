@@ -2,23 +2,38 @@
 
 namespace App;
 
+use App\Commands\SetAccount;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class ChatGpt
 {
+    public const ACCOUNT_FREE = 'free';
+    public const ACCOUNT_PLUS = 'plus';
+    public const ACCOUNT_TURBO = 'turbo';
+
     /**
      * The last error that occurred.
      */
     protected ?string $error = null;
 
     /**
+     * The available models.
+     */
+    public static $models = [
+        ChatGpt::ACCOUNT_FREE => 'text-davinci-002-render',
+        ChatGpt::ACCOUNT_PLUS => 'text-davinci-002-render-paid',
+        ChatGpt::ACCOUNT_TURBO => 'text-davinci-002-render-sha',
+    ];
+
+    /**
      * Constructor.
      */
     public function __construct(
         protected string $token,
-        protected string $model = 'text-davinci-002-render-sha',
+        protected string $model = ChatGpt::ACCOUNT_FREE,
         protected string $url = 'https://chat.duti.tech/api/conversation',
     ) {}
 
@@ -75,7 +90,7 @@ class ChatGpt
     {
         return [
             'action' => 'next',
-            'model' => $this->model,
+            'model' => Cache::get(SetAccount::CACHE_KEY, $this->model),
             'parent_message_id' => Str::uuid(),
             'messages' => [
                 [
