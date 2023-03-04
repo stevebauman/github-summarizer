@@ -12,7 +12,7 @@ class Here extends Command
      *
      * @var string
      */
-    protected $signature = 'here';
+    protected $signature = 'here {--all}';
 
     /**
      * The description of the command.
@@ -53,7 +53,21 @@ class Here extends Command
 
         $diff = Git::diff($dir);
 
-        foreach ($this->parseDiff($diff) as $file) {
+        $files = $this->parseDiff($diff);
+
+        if (! $this->option('all')) {
+            $names = array_map(fn (File $file) => (
+                $file->newFilename
+            ), $files);
+
+            $file = $this->choice('Which changed file do you want to summarize?', $names);
+
+            $index = array_search($file, $names);
+
+            $files = [$files[$index]];
+        }
+
+        foreach ($files as $file) {
             $names = array_unique([
                 $file->originalFilename === '/dev/null'
                     ? $file->newFilename
