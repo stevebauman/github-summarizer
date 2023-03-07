@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Git;
+use Illuminate\Support\Str;
 use ptlis\DiffParser\File;
 
 class Here extends Command
@@ -12,7 +13,7 @@ class Here extends Command
      *
      * @var string
      */
-    protected $signature = 'here {--all}';
+    protected $signature = 'here {files?} {--all}';
 
     /**
      * The description of the command.
@@ -53,19 +54,9 @@ class Here extends Command
 
         $diff = Git::diff($dir);
 
-        $files = $this->parseDiff($diff);
-
-        if (! $this->option('all')) {
-            $names = array_map(fn (File $file) => (
-                $file->newFilename
-            ), $files);
-
-            $file = $this->choice('Which changed file do you want to summarize?', $names);
-
-            $index = array_search($file, $names);
-
-            $files = [$files[$index]];
-        }
+        $files = $this->getFilesToSummarize(
+            $this->parseDiff($diff)
+        );
 
         foreach ($files as $file) {
             $names = array_unique([
@@ -91,6 +82,35 @@ class Here extends Command
         $this->info('Done.');
 
         return static::SUCCESS;
+    }
+
+    /**
+     * Get the files to summarize.
+     */
+    protected function getFilesToSummarize(array $files): array
+    {
+        if ($this->option('all')) {
+            return $files;
+        }
+
+        if ($only = $this->argument('files')) {
+            $names = preg_split('/[,\n]/', trim($only));
+
+            return array_filter($files, fn (File $file) => (
+                in_array($file->newFilename, $names)
+                || in_array($file->originalFilename, $names)
+            ));
+        }
+
+        $names = array_map(fn (File $file) => (
+            $file->newFilename
+        ), $files);
+
+        $file = $this->choice('Which changed file do you want to summarize?', $names);
+
+        $index = array_search($file, $names);
+
+        return [$files[$index]];
     }
 
     /**
