@@ -1,6 +1,8 @@
-# GitHub Summarizer (ChatGPT)
+<h1 align="center">GitHub Summarizer (ChatGPT)</h1>
 
-Summarize GitHub pull requests and commits using ChatGPT, for free. 💸
+<p align="center">Summarize GitHub pull requests and commits using ChatGPT, for free. 💸</p>
+
+---
 
 > **Warning**: This project uses a third-party ChatGPT reverse proxy server using your session token.
 > 
