@@ -137,6 +137,18 @@ Summarize a specific commit responding in a "commit" style:
 summarize commit laravel/framework {sha} --style=commit
 ```
 
+Summarize a range of commits from the tagged version to `master`:
+
+```bash
+summarize commit laravel/framework --from=v10.0.1
+```
+
+Summarize a range of commits from the tagged version to another tagged version:
+
+```bash
+summarize commit laravel/framework --from=v10.0.1 --to=v10.0.2
+```
+
 Summarize a range of commits:
 
 ```bash
