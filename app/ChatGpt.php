@@ -34,7 +34,7 @@ class ChatGpt
     public function __construct(
         protected string $token,
         protected string $model = ChatGpt::ACCOUNT_FREE,
-        protected string $url = 'https://chat.duti.tech/api/conversation',
+        protected string $url = 'https://bypass.duti.tech/api/conversation',
     ) {}
 
     /**
