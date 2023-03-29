@@ -37,10 +37,10 @@ jobs:
 
       - name: Build Application
         working-directory: ./builds
-        run: haulable summarize --platform all
+        run: haulable summarize --platform="All Platforms"
 
       - name: Pull latest
-        run: git pull origin main
+        run: git pull origin master
 
       - name: Push Built Applications
         uses: stefanzweifel/git-auto-commit-action@v4
