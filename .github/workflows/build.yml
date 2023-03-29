@@ -1,0 +1,49 @@
+name: Build
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        os: [ubuntu-latest]
+        php: [8.2]
+        stability: [prefer-stable]
+
+    name: P${{ matrix.php }} - ${{ matrix.stability }} - ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          coverage: none
+
+      - name: Install dependencies
+        run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction
+
+      - name: Install haulable
+        run: composer global require configured/haulable
+
+      - name: Build Summarize Phar
+        run: php summarize app:build summarize
+
+      - name: Build Application
+        working-directory: ./builds
+        run: haulable summarize --platform all
+
+      - name: Pull latest
+        run: git pull origin main
+
+      - name: Push Built Applications
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Phar build
+          file_pattern: builds/*
