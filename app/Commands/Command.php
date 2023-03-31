@@ -31,7 +31,7 @@ abstract class Command extends BaseCommand
                 new FilePatch(
                     $file['filename'],
                     $file['previous_filename'] ?? null,
-                    $file['patch']
+                    $file['patch'] ?? ''
                 )
             );
         }
