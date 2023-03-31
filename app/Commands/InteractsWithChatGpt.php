@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\ChatGpt;
+use Illuminate\Support\Facades\Cache;
 
 /** @mixin \LaravelZero\Framework\Commands\Command */
 trait InteractsWithChatGpt
@@ -20,8 +21,17 @@ trait InteractsWithChatGpt
     protected function chatgpt(): ChatGpt
     {
         return $this->chatGpt ??= new ChatGpt(
-            $this->getChatGptToken()
+            $this->getChatGptToken(),
+            $this->getChatGptModel(),
         );
+    }
+
+    /**
+     * Get the Chat GPT model to utilize.
+     */
+    protected function getChatGptModel(): string
+    {
+        return ChatGpt::$models[Cache::get(SetAccount::CACHE_KEY, ChatGpt::ACCOUNT_FREE)];
     }
 
     /**

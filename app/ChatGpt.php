@@ -29,13 +29,25 @@ class ChatGpt
     ];
 
     /**
+     * The available proxy URL's.
+     */
+    public static $urls = [
+        'https://bypass.churchless.tech/api/conversation',
+        'https://api.pawan.krd/backend-api/conversation',
+    ];
+
+    /**
      * Constructor.
      */
     public function __construct(
         protected string $token,
-        protected string $model = ChatGpt::ACCOUNT_FREE,
-        protected string $url = 'https://bypass.duti.tech/api/conversation',
-    ) {}
+        protected string $model,
+    ) {
+        throw_if(
+            ! in_array($model, $models = array_values(static::$models)),
+            sprintf('Model [%s] is invalid. Available models are [%s].', $model ?? 'NULL', implode(', ', $models))
+        );
+    }
 
     /**
      * Get the last error that occurred.
@@ -52,7 +64,9 @@ class ChatGpt
     {
         $this->error = null;
 
-        $body = $this->http()->post($this->url, $this->makeMessage($question))->body();
+        $body = retry(count(static::$urls), fn ($attempt) => (
+            $this->http()->post(static::$urls[--$attempt], $this->makeMessage($question))
+        ))->body();
 
         if ($json = json_decode($body, true)) {
             $this->error = is_array($json['detail'])
@@ -90,7 +104,7 @@ class ChatGpt
     {
         return [
             'action' => 'next',
-            'model' => Cache::get(SetAccount::CACHE_KEY, $this->model),
+            'model' => $this->model,
             'parent_message_id' => Str::uuid(),
             'messages' => [
                 [
