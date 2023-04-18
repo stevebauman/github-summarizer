@@ -4,9 +4,11 @@ namespace App;
 
 use App\Commands\SetAccount;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use UnexpectedValueException;
 
 class ChatGpt
 {
@@ -81,6 +83,8 @@ class ChatGpt
 
     /**
      * Get the response to the question from Chat GPT.
+     *
+     * @throws UnexpectedValueException
      */
     protected function getResponse(string $body): string
     {
@@ -92,9 +96,13 @@ class ChatGpt
 
         $response = last($matched);
 
-        $parts = json_decode($response, true)['message']['content']['parts'];
+        $data = json_decode($response, true);
 
-        return implode(' ', $parts);
+        if (! Arr::has($data, 'message.content.parts')) {
+            throw new UnexpectedValueException("Unexpected response received from ChatGPT: $response");
+        }
+
+        return implode(' ', $data['message']['content']['parts']);
     }
 
     /**
