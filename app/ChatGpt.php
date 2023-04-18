@@ -45,10 +45,7 @@ class ChatGpt
         protected string $token,
         protected string $model,
     ) {
-        throw_if(
-            ! in_array($model, $models = array_values(static::$models)),
-            sprintf('Model [%s] is invalid. Available models are [%s].', $model ?? 'NULL', implode(', ', $models))
-        );
+        $this->assertValidModel($model);
     }
 
     /**
@@ -136,5 +133,16 @@ class ChatGpt
                 ->accept('text/event-stream')
                 ->withToken($this->token)
                 ->throw();
+    }
+
+    /**
+     * Assert that the given model is valid.
+     */
+    protected function assertValidModel(string $model): void
+    {
+        throw_if(
+            ! in_array($model, $models = array_values(static::$models)),
+            sprintf('Model [%s] is invalid. Available models are [%s].', $model ?? 'NULL', implode(', ', $models))
+        );
     }
 }
