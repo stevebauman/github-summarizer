@@ -34,8 +34,8 @@ class ChatGpt
      * The available proxy URL's.
      */
     public static $urls = [
-        'https://bypass.churchless.tech/api/conversation',
         'https://api.pawan.krd/backend-api/conversation',
+        'https://ai.fakeopen.com/api/conversation',
     ];
 
     /**
