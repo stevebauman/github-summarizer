@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Git;
 use Illuminate\Support\Str;
 use ptlis\DiffParser\File;
+use UnexpectedValueException;
 
 class Here extends Command
 {
@@ -121,6 +122,10 @@ class Here extends Command
         $response = $this->chatgpt()->ask(
             $this->getQuestion((string) $file, 'commit')
         );
+
+        if (! $response) {
+            throw new UnexpectedValueException("ChatGPT returned an unexpected response: " . $this->chatgpt()->error());
+        }
 
         switch ($choice = $this->choice($response, ['Commit', 'Retry', 'Pass'], 0)) {
             case 'Retry':
