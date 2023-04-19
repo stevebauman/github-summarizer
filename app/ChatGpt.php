@@ -34,7 +34,6 @@ class ChatGpt
      * The available proxy URL's.
      */
     public static $urls = [
-        'https://api.pawan.krd/backend-api/conversation',
         'https://ai.fakeopen.com/api/conversation',
     ];
 
@@ -63,9 +62,9 @@ class ChatGpt
     {
         $this->error = null;
 
-        $body = retry(count(static::$urls), fn ($attempt) => (
-            $this->http()->post(static::$urls[--$attempt], $this->makeMessage($question))
-        ))->body();
+        $body = retry(count(static::$urls), function ($attempt) use (&$url, $question) {
+            return $this->http()->post($url = static::$urls[--$attempt], $this->makeMessage($question));
+        })->body();
 
         if (json_decode($body, true)) {
             $this->error = $body;
@@ -73,7 +72,7 @@ class ChatGpt
             return false;
         }
 
-        return $this->getResponse($body);
+        return $this->getResponse($body, $url);
     }
 
     /**
@@ -81,7 +80,7 @@ class ChatGpt
      *
      * @throws UnexpectedValueException
      */
-    protected function getResponse(string $body): string
+    protected function getResponse(string $body, string $url): string
     {
         preg_match_all('/(?<=data:).*?(?=\n)/', $body, $matches);
 
@@ -97,7 +96,17 @@ class ChatGpt
             throw new UnexpectedValueException("Unexpected response received from ChatGPT: $body");
         }
 
+        $this->deleteConversation($url, Arr::get($data, 'conversation_id'));
+
         return implode(' ', $data['message']['content']['parts']);
+    }
+
+    /**
+     * Delete the conversation in ChatGPT.
+     */
+    protected function deleteConversation(string $url, string $conversationId): void
+    {
+        $this->http()->patch(implode('/', [$url, $conversationId]), ['is_visible' => false]);
     }
 
     /**
