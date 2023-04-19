@@ -67,10 +67,8 @@ class ChatGpt
             $this->http()->post(static::$urls[--$attempt], $this->makeMessage($question))
         ))->body();
 
-        if ($json = json_decode($body, true)) {
-            $this->error = is_array($json['detail'])
-                ? $json['detail']['message']
-                : $json['detail'];
+        if (json_decode($body, true)) {
+            $this->error = $body;
 
             return false;
         }
