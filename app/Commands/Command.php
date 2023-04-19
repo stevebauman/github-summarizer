@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\FilePatch;
 use Gioni06\Gpt3Tokenizer\Gpt3Tokenizer;
 use Gioni06\Gpt3Tokenizer\Gpt3TokenizerConfig;
+use Illuminate\Support\Str;
 use LaravelZero\Framework\Commands\Command as BaseCommand;
 use ptlis\DiffParser\File;
 use ptlis\DiffParser\Parser;
@@ -117,12 +118,17 @@ abstract class Command extends BaseCommand
     protected function getQuestion(string $diff, string $style): false|string
     {
         $type = match ($style) {
-            'commit' => "commit message. Use words like 'add', 'remove' and 'change'",
-            default => "changelog entry. Use words like 'added', 'removed' and 'changed'",
+            'commit' => "commit message. Use words like 'add', 'remove' and 'change'.",
+            default => "changelog entry. Use words like 'added', 'removed' and 'changed'.",
         };
 
+        $prompt = Str::squish(<<<EOT
+            Describe below diff in a short sentence like a $type.
+            If the diff is empty, simply mention that the file was changed:
+        EOT);
+
         return <<<EOT
-        Describe below diff in a short sentence like a $type:
+        $prompt
         $diff
         EOT;
     }
