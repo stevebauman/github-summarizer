@@ -94,7 +94,7 @@ class ChatGpt
         $data = json_decode($response, true);
 
         if (! Arr::has($data, 'message.content.parts')) {
-            throw new UnexpectedValueException("Unexpected response received from ChatGPT: $response");
+            throw new UnexpectedValueException("Unexpected response received from ChatGPT: $body");
         }
 
         return implode(' ', $data['message']['content']['parts']);
