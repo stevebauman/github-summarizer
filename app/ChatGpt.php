@@ -35,6 +35,7 @@ class ChatGpt
      */
     public static $urls = [
         'https://ai.fakeopen.com/api/conversation',
+        'https://api.pawan.krd/backend-api/conversation',
     ];
 
     /**
