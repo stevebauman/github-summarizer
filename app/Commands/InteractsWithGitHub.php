@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use Github\AuthMethod;
 use Github\Client;
+use Illuminate\Support\Facades\Cache;
 
 trait InteractsWithGitHub
 {
@@ -26,10 +27,12 @@ trait InteractsWithGitHub
     }
 
     /**
-     * Get the GitHub access token from the token file.
+     * Get the GitHub access token.
      */
     protected function getGitHubAccessToken(): string
     {
-        return $this->getOrCreateInHomeDir('.gh_token', 'GitHub access token');
+        return Cache::rememberForever('github_token', function () {
+            return $this->secret('Enter your GitHub access token');
+        });
     }
 }
