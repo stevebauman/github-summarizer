@@ -1,18 +1,14 @@
 <h1 align="center">GitHub Summarizer (ChatGPT)</h1>
 
-<p align="center">Summarize GitHub pull requests and commits using ChatGPT, for free. 💸</p>
+<p align="center">Summarize GitHub pull requests and commits using OpenAI</p>
 
 ---
-
-> **Warning**: This project uses a third-party ChatGPT reverse proxy server using your session token.
-> 
-> There shouldn't be any adverse effects possible from this, but please consider the risks before using this package.
 
 ## Index
 
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Authentication Setup](#authentication-setup)
+- [Setup](#setup)
 - [Usage](#usage)
 
 ## Requirements
@@ -27,50 +23,19 @@ Install GitHub summarizer via the below command:
 composer global require stevebauman/github-summarizer
 ```
 
-## Authentication Setup
+## Setup
 
-GitHub Summarizer requires two files created in your operating system's `home` directory:
-
-- `.gh_token`
-- `.gpt_token`
-
-To find your OS' "home" directory, run the below console command:
-
-```bash
-php -r 'echo $_SERVER["HOME"];'
-```
-
-### GitHub Access Token
-
-Create a [GitHub access token](https://github.com/settings/tokens).
-
-Copy the token, and paste it in the `.gh_token` file in your home directory.
-
-### ChatGPT Session Token
-
-Login to ChatGPT, inspect the page, click the "Network" tab, and copy the entire `session` JSON response:
-
-> **Tip**: Click the "Fetch/XHR" filter tab, then refresh the page. It will be the first network request sent.
-
-<p align="center">
-<img width="750" src="https://user-images.githubusercontent.com/6421846/221437445-610ba3a9-a38c-43c5-ba47-786b21243c8c.png"/>
-</p>
-
-Once copied, store the contents in the `.gpt_session` file in your home directory.
-
-> **Important**: This file will need to be updated every 2-3 days (after the token expires).
+GitHub Summarizer will prompt you for an OpenAI token the first time you attempt to summarize local
+commits, as well as a GitHub token the first time you attempt to summarize a pull request.
 
 ## Usage
 
-### Setting Your Account Type (Free, Pro, Plus)
+### Local Git Commit Summarization
+
+Summarize local git commits in the current working directory:
 
 ```bash
-summarize set:account
-
-> "What type of account do you have?:"
-  [0] free
-  [1] plus
-  [2] turbo
+summarize here {files?} {--all}
 ```
 
 ### Pull Request Summarization
