@@ -3,8 +3,7 @@
 namespace App\Commands;
 
 use App\FilePatch;
-use Gioni06\Gpt3Tokenizer\Gpt3Tokenizer;
-use Gioni06\Gpt3Tokenizer\Gpt3TokenizerConfig;
+use App\Tokenizer;
 use Illuminate\Support\Str;
 use LaravelZero\Framework\Commands\Command as BaseCommand;
 use ptlis\DiffParser\File;
@@ -15,12 +14,7 @@ abstract class Command extends BaseCommand
     use InteractsWithGitHub;
     use InteractsWithChatGpt;
 
-    public const MAX_TOKENS = 4096;
-
-    /**
-     * The GTP3 tokenizer instance.
-     */
-    protected ?Gpt3Tokenizer $tokenizer = null;
+    public const MAX_TOKENS = 128_000;
 
     /**
      * Summarize the patch files using Chat GPT.
@@ -41,7 +35,7 @@ abstract class Command extends BaseCommand
     /**
      * Generate a summary for the file patch.
      */
-    protected function generateFileSummary(FilePatch $patch)
+    protected function generateFileSummary(FilePatch $patch): void
     {
         $originalFilename = $patch->previousFilename ?? $patch->filename;
 
@@ -51,10 +45,12 @@ abstract class Command extends BaseCommand
         $patch->contents
         EOT;
 
-        $tokens = $this->tokenizer()->count($diff);
+        $tokens = Tokenizer::count($diff);
 
         if ($tokens >= static::MAX_TOKENS) {
-            return $this->splitUpDiffAndSummarize($diff);
+            $this->splitUpDiffAndSummarize($diff);
+
+            return;
         }
 
         $response = retry(2, fn () => (
@@ -73,7 +69,7 @@ abstract class Command extends BaseCommand
     /**
      * Split the diff in half and attempt summarization.
      */
-    protected function splitUpDiffAndSummarize(string $diff)
+    protected function splitUpDiffAndSummarize(string $diff): void
     {
         $file = head($this->parseDiff($diff));
 
@@ -118,8 +114,8 @@ abstract class Command extends BaseCommand
     protected function getQuestion(string $diff, string $style): false|string
     {
         $type = match ($style) {
-            'commit' => "commit message. Use words like 'add', 'remove' and 'change'.",
-            default => "changelog entry. Use words like 'added', 'removed' and 'changed'.",
+            'commit' => "commit message. Use words like 'add', 'remove' and 'change'",
+            default => "changelog entry. Use words like 'added', 'removed' and 'changed'",
         };
 
         $prompt = Str::squish(<<<EOT
@@ -131,16 +127,6 @@ abstract class Command extends BaseCommand
         $prompt
         $diff
         EOT;
-    }
-
-    /**
-     * Get or create the tokenizer instance.
-     */
-    protected function tokenizer(): Gpt3Tokenizer
-    {
-        return $this->tokenizer ??= new Gpt3Tokenizer(
-            new Gpt3TokenizerConfig()
-        );
     }
 
     /**
